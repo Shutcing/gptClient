@@ -30,7 +30,7 @@
     btnN.addEventListener("click", () => {
       let text = document.querySelector("textarea").value;
       if (text) {
-        puter.ai.chat(text, options={model: "claude-3-5-sonnet"}).then((resp) => {
+        puter.ai.chat(text, options={model: "gpt-4o"}).then((resp) => {
           let ans = document.createElement("div")
           ans.classList.add("ans");
           ans.textContent = resp;
