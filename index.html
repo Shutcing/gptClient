@@ -8,10 +8,12 @@
   <body>
     <textarea name="" id=""></textarea>
     <div class="btn" style="background: red; cursor: pointer">start</div>
+    <div class="btnN" style="background: red; cursor: pointer">start 4-o</div>
   </body>
   <script src="https://js.puter.com/v2/"></script>
   <script>
     const btn = document.querySelector(".btn");
+    const btnN = document.querySelector(".btnN");
     btn.addEventListener("click", () => {
       let text = document.querySelector("textarea").value;
       if (text) {
@@ -24,5 +26,19 @@
         });
       }
     });
+
+    btnN.addEventListener("click", () => {
+      let text = document.querySelector("textarea").value;
+      if (text) {
+        puter.ai.chat(text, options={model: "gpt-4o"}).then((resp) => {
+          let ans = document.createElement("div")
+          ans.classList.add("ans");
+          ans.textContent = resp;
+
+          document.querySelector("body").append(ans)
+        });
+      }
+    });
+    
   </script>
 </html>
