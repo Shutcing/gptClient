@@ -42,7 +42,7 @@
       let imageUrl = document.querySelector("textarea").value;
       if (imageUrl) {
         puter.ai.chat(
-          "What do you see?", 
+          "Строго и подробно перепиши всю информацию с картинки, используй latex. Ничего не упусти.", 
           { image: imageUrl }
         ).then((resp) => {
           appendAnswer(resp);
