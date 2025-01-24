@@ -43,7 +43,7 @@
       if (imageUrl) {
         puter.ai.chat(
           "Строго и подробно перепиши всю информацию с картинки, используй latex. Ничего не упусти.", 
-          { image: imageUrl }
+          imageUrl
         ).then((resp) => {
           appendAnswer(resp);
         });
