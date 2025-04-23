@@ -8,27 +8,12 @@
   <body>
     <textarea name="" id=""></textarea>
     <div class="btn" style="background: red; cursor: pointer">start</div>
-    <div class="btnN" style="background: red; cursor: pointer">start 4-o</div>
-    <!-- Новая кнопка для анализа изображений -->
-    <div class="btnImg" style="background: blue; cursor: pointer; color: white">Analyze Image</div>
   </body>
   <script src="https://js.puter.com/v2/"></script>
   <script>
     const btn = document.querySelector(".btn");
-    const btnN = document.querySelector(".btnN");
-    const btnImg = document.querySelector(".btnImg");
 
-    // Оригинальные обработчики
     btn.addEventListener("click", () => {
-      let text = document.querySelector("textarea").value;
-      if (text) {
-        puter.ai.chat(text).then((resp) => {
-          appendAnswer(resp);
-        });
-      }
-    });
-
-    btnN.addEventListener("click", () => {
       let text = document.querySelector("textarea").value;
       if (text) {
         puter.ai.chat(text, {model: "o1"}).then((resp) => {
@@ -39,18 +24,6 @@
       }
     });
 
-    // Новый обработчик для анализа изображений
-    btnImg.addEventListener("click", () => {
-      let imageUrl = document.querySelector("textarea").value;
-      if (imageUrl) {
-        puter.ai.chat(
-          "Строго и подробно перепиши всю информацию с картинки, используй latex. Ничего не упусти.", 
-          imageUrl
-        ).then((resp) => {
-          appendAnswer(resp);
-        });
-      }
-    });
 
     // Общая функция для добавления ответов
     function appendAnswer(response) {
