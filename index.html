@@ -32,7 +32,9 @@
       let text = document.querySelector("textarea").value;
       if (text) {
         puter.ai.chat(text, {model: "o1"}).then((resp) => {
-          appendAnswer(resp);
+          for (let part of resp) {
+            appendAnswer(part);
+          }
         });
       }
     });
@@ -54,7 +56,7 @@
     function appendAnswer(response) {
       let ans = document.createElement("div");
       ans.classList.add("ans");
-      ans.textContent = response;
+      ans.innerHtml += <br>response;
       document.body.appendChild(ans);
     }
   </script>
