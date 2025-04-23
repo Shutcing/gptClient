@@ -31,7 +31,7 @@
     btnN.addEventListener("click", () => {
       let text = document.querySelector("textarea").value;
       if (text) {
-        puter.ai.chat(text, {model: "gpt-4o"}).then((resp) => {
+        puter.ai.chat(text, {model: "o1"}).then((resp) => {
           appendAnswer(resp);
         });
       }
