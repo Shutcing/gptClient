@@ -7,7 +7,7 @@
   </head>
   <body>
     <textarea name="" id=""></textarea>
-    <div class="btn" style="background: red; cursor: pointer">start</div>
+    <div class="btn" style="background: green; cursor: pointer">start</div>
   </body>
   <script src="https://js.puter.com/v2/"></script>
   <script>
@@ -15,22 +15,13 @@
 
     btn.addEventListener("click", () => {
       let text = document.querySelector("textarea").value;
-      if (text) {
-        puter.ai.chat(text, {model: "o1"}).then((resp) => {
-          for (let part of resp) {
-            appendAnswer(part);
-          }
-        });
-      }
+      (async () => {
+        const resp = await puter.ai.chat(text,
+          { model: "o1", stream: true }
+        );
+        for await (const part of resp)
+          document.write(part?.text);
+      })();
     });
-
-
-    // Общая функция для добавления ответов
-    function appendAnswer(response) {
-      let ans = document.createElement("div");
-      ans.classList.add("ans");
-      ans.innerHtml += <br>response;
-      document.body.appendChild(ans);
-    }
   </script>
 </html>
