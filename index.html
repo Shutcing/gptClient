@@ -17,7 +17,7 @@
       let text = document.querySelector("textarea").value;
       (async () => {
         const resp = await puter.ai.chat(text,
-          { model: "o1", stream: true }
+          { model: "o1-pro", stream: true }
         );
         for await (const part of resp){  
           document.write(part?.text.replaceAll("\n", "<br>").replaceAll(/[ \t]/g, "&nbsp;"));
