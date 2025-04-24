@@ -19,8 +19,10 @@
         const resp = await puter.ai.chat(text,
           { model: "o1", stream: true }
         );
-        for await (const part of resp)
+        for await (const part of resp){  
           document.write(part?.text.replaceAll("\n", "<br>").replace(/\t/g, "<tab>"));
+          console.log(part);
+        }
       })();
     });
   </script>
