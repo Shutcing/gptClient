@@ -99,52 +99,55 @@
 
     <script src="https://js.puter.com/v2/"></script>
     <script>
-      const btn    = document.querySelector(".btn");
-      const out    = document.querySelector(".output");
-      const load   = document.querySelector(".loader");
-      const area   = document.querySelector("textarea");
-    
-      btn.addEventListener("click", async () => {
-        const text = area.value.trim();
-        if (!text) return;
-    
-        out.textContent = "";
-        load.style.display = "block";
-        btn.disabled = true;
-    
-        try {
-          // 1) Логируем запрос
-          console.log("Запрос к puter.ai.chat, модель=o1-mini");
-    
-          // 2) Корректный вызов с 3 параметрами
-          const resp = await puter.ai.chat(
-            [
-              { role: "system", content: "Код обёрнут в ```" },
-              { role: "user",   content: text }
-            ],
-            false,
-            { model: "o1-mini", stream: true }
-          );
-    
-          console.log("RESP:", resp);
-    
-          // 3) Читаем стрим
-          let result = "";
-          for await (const part of resp) {
-            console.log("PART:", part);
-            result += part?.text ?? "";
-            out.textContent = result;
-            out.scrollTop = out.scrollHeight;
-          }
-        } catch (err) {
-          console.error("CATCH:", err);
-          out.textContent = `Error: ${err.message}`;
-        } finally {
-          load.style.display = "none";
-          btn.disabled = false;
+    const btn    = document.querySelector(".btn");
+    const out    = document.querySelector(".output");
+    const load   = document.querySelector(".loader");
+    const area   = document.querySelector("textarea");
+
+    btn.addEventListener("click", async () => {
+      const text = area.value.trim();
+      if (!text) return;
+
+      // 1) Очистка UI
+      out.textContent = '';
+      load.style.display = 'block';
+      btn.disabled = true;
+
+      try {
+        // 2) Если не аутентифицированы — войти
+        if (!puter.auth.isSignedIn()) {
+          console.log("Запускаем аутентификацию…");
+          await puter.auth.signIn();
         }
-      });
-    </script>
+
+        // 3) Вызываем Chat API с нужной моделью
+        const resp = await puter.ai.chat(
+          [
+            { role: "system", content: "Код заключать в ``````" },
+            { role: "user",   content: text }
+          ],
+          /* testMode */ false,
+          { model: "o1-mini", stream: true }
+        );
+        console.log("RESP:", resp);
+
+        // 4) Читаем поток
+        let result = '';
+        for await (const part of resp) {
+          console.log("PART:", part);
+          result += part?.text ?? '';
+          out.textContent = result;
+          out.scrollTop = out.scrollHeight;
+        }
+      } catch (err) {
+        console.error("Ошибка:", err);
+        out.textContent = `Error: ${err.message}`;
+      } finally {
+        load.style.display = 'none';
+        btn.disabled = false;
+      }
+    });
+  </script>
 
   </body>
 </html>
