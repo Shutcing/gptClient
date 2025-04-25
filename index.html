@@ -4,11 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Chat Interface</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
       * {
         box-sizing: border-box;
-        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
       }
 
       body {
@@ -64,9 +67,9 @@
         padding: 20px;
         background: white;
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         white-space: pre-wrap;
-        font-family: 'Consolas', monospace;
+        font-family: "Consolas", monospace;
         min-height: 100px;
       }
 
@@ -82,14 +85,82 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Стили для новых элементов */
+      .model-selector {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        background: white;
+      }
+
+      .file-upload {
+        margin: 10px 0;
+      }
+
+      .file-upload input[type="file"] {
+        display: none;
+      }
+
+      .file-upload label {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #28a745;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .file-upload label:hover {
+        background: #218838;
+      }
+
+      #context-input {
+        height: 100px;
+        margin: 10px 0;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <textarea placeholder="Enter your prompt here..."></textarea>
+      <!-- Поле выбора модели -->
+      <select class="model-selector">
+        <option value="o3-mini">OpenAI O3-mini</option>
+        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+        <option value="deepseek-chat">DeepSeek Chat</option>
+        <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+      </select>
+
+      <!-- Основное поле ввода -->
+      <textarea
+        id="main-input"
+        placeholder="Enter your prompt here..."
+      ></textarea>
+
+      <!-- Блок для загрузки изображения -->
+      <div class="file-upload">
+        <input type="file" id="image-input" accept="image/*" />
+        <label for="image-input">Attach Image</label>
+      </div>
+
+      <!-- Поле для контекстных сообщений -->
+      <textarea
+        id="context-input"
+        placeholder='Paste context JSON (e.g. [{"role":"user","content":"..."}])'
+      ></textarea>
+
+      <!-- Кнопка генерации -->
       <button class="btn">Generate</button>
       <div class="loader"></div>
       <div class="output"></div>
@@ -100,25 +171,54 @@
       const btn = document.querySelector(".btn");
       const output = document.querySelector(".output");
       const loader = document.querySelector(".loader");
-      const textarea = document.querySelector("textarea");
+      const mainInput = document.getElementById("main-input");
+      const contextInput = document.getElementById("context-input");
+      const imageInput = document.getElementById("image-input");
+      const modelSelector = document.querySelector(".model-selector");
 
       btn.addEventListener("click", async () => {
         try {
-          const text = textarea.value.trim();
-          if (!text) return;
+          const text = mainInput.value.trim();
+          const context = contextInput.value.trim();
+          const model = modelSelector.value;
+          const imageFile = imageInput.files[0];
 
-          output.innerHTML = '';
-          loader.style.display = 'block';
-          btn.style.opacity = '0.7';
-          btn.style.pointerEvents = 'none';
+          if (!text && !context) {
+            alert("Please enter a prompt or provide context!");
+            return;
+          }
 
-          // Исправлено указание модели согласно документации
-          const resp = await puter.ai.chat(text, { 
-            model: "o3-mini", // Правильное имя модели из списка доступных
-            stream: true 
-          });
-          
-          let result = '';
+          output.innerHTML = "";
+          loader.style.display = "block";
+          btn.style.opacity = "0.7";
+          btn.style.pointerEvents = "none";
+
+          let resp;
+          const options = {
+            model: model,
+            stream: true,
+          };
+
+          // Обработка контекстных сообщений
+          if (context) {
+            try {
+              const messages = JSON.parse(context);
+              resp = await puter.ai.chat(messages, options);
+            } catch (e) {
+              throw new Error("Invalid JSON context format");
+            }
+          }
+          // Обработка изображения
+          else if (imageFile) {
+            const imageURL = URL.createObjectURL(imageFile);
+            resp = await puter.ai.chat(text, imageURL, options);
+          }
+          // Обычный текстовый запрос
+          else {
+            resp = await puter.ai.chat(text, options);
+          }
+
+          let result = "";
           for await (const part of resp) {
             if (part?.text) {
               result += part.text;
@@ -129,9 +229,10 @@
         } catch (error) {
           output.textContent = `Error: ${error.message}`;
         } finally {
-          loader.style.display = 'none';
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'all';
+          loader.style.display = "none";
+          btn.style.opacity = "1";
+          btn.style.pointerEvents = "all";
+          URL.revokeObjectURL(imageFile); // Очистка временного URL
         }
       });
     </script>
