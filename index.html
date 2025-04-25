@@ -1,3 +1,5 @@
+Просто у меня была идея с помощью этого сайта и selenium на python обходить лимиты puter
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -99,55 +101,61 @@
 
     <script src="https://js.puter.com/v2/"></script>
     <script>
-    const btn    = document.querySelector(".btn");
-    const out    = document.querySelector(".output");
-    const load   = document.querySelector(".loader");
-    const area   = document.querySelector("textarea");
+      const btn = document.querySelector(".btn");
+      const output = document.querySelector(".output");
+      const loader = document.querySelector(".loader");
+      const textarea = document.querySelector("textarea");
 
-    btn.addEventListener("click", async () => {
-      const text = area.value.trim();
-      if (!text) return;
+      btn.addEventListener("click", async () => {
+        try {
+          const text = textarea.value.trim();
+          if (!text) return;
 
-      // 1) Очистка UI
-      out.textContent = '';
-      load.style.display = 'block';
-      btn.disabled = true;
+          // Очищаем предыдущий вывод
+          output.innerHTML = '';
+          loader.style.display = 'block';
+          btn.style.opacity = '0.7';
+          btn.style.pointerEvents = 'none';
 
-      try {
-        // 2) Если не аутентифицированы — войти
-        if (!puter.auth.isSignedIn()) {
-          console.log("Запускаем аутентификацию…");
-          await puter.auth.signIn();
-        }
-
-        // 3) Вызываем Chat API с нужной моделью
-        const resp = await puter.ai.chat(
+          const resp = await puter.ai.chat(
           [
-            { role: "system", content: "Код заключать в ``````" },
-            { role: "user",   content: text }
+            {
+              role: "system",
+              content: "ВАЖНО: весь код, который пишешь, заключай в
+. Я имею в виду код на языках программирования, например js, python, c# и так далее"
+            },
+            {
+              role: "user",
+              content: text // здесь подставляете строку из textarea
+            }
           ],
-          /* testMode */ false,
-          { model: "o1-mini", stream: true }
+          {
+            model: "o3",
+            stream: true
+          }
         );
-        console.log("RESP:", resp);
-
-        // 4) Читаем поток
-        let result = '';
-        for await (const part of resp) {
-          console.log("PART:", part);
-          result += part?.text ?? '';
-          out.textContent = result;
-          out.scrollTop = out.scrollHeight;
+          
+          // Для потокового вывода
+          let result = '';
+          for await (const part of resp) {
+            if (part?.text) {
+              result += part.text;
+              // Используем textContent вместо innerHTML для безопасности
+              // Замены переносов и пробелов теперь обрабатываются через CSS
+              output.textContent = result;
+              
+              // Автоскролл к новому контенту
+              output.scrollTop = output.scrollHeight;
+            }
+          }
+        } catch (error) {
+          output.textContent = `Error: ${error.message}`;
+        } finally {
+          loader.style.display = 'none';
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'all';
         }
-      } catch (err) {
-        console.error("Ошибка:", err);
-        out.textContent = `Error: ${err.message}`;
-      } finally {
-        load.style.display = 'none';
-        btn.disabled = false;
-      }
-    });
-  </script>
-
+      });
+    </script>
   </body>
 </html>
