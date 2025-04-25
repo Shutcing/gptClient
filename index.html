@@ -1,162 +1,135 @@
 <!DOCTYPE html>
- <html lang="en">
-   <head>
-     <meta charset="UTF-8" />
-     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-     <title>Document</title>
-     <title>AI Chat Interface</title>
-     <!-- Добавлены современные стили и Google Fonts -->
-     <style>
-       * {
-         box-sizing: border-box;
-         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-       }
- 
-       body {
-         margin: 0;
-         padding: 20px;
-         min-height: 100vh;
-         background: #f0f2f5;
-       }
- 
-       .container {
-         max-width: 800px;
-         margin: 0 auto;
-       }
- 
-       textarea {
-         width: 100%;
-         height: 150px;
-         padding: 15px;
-         margin: 10px 0;
-         border: 2px solid #e0e0e0;
-         border-radius: 12px;
-         resize: vertical;
-         font-size: 16px;
-         transition: border-color 0.3s ease;
-       }
- 
-       textarea:focus {
-         outline: none;
-         border-color: #007bff;
-       }
- 
-       .btn {
-         display: inline-flex;
-         align-items: center;
-         padding: 12px 24px;
-         background: #007bff;
-         color: white;
-         border-radius: 8px;
-         cursor: pointer;
-         transition: all 0.2s ease;
-         user-select: none;
-         margin: 10px 0;
-       }
- 
-       .btn:hover {
-         background: #0056b3;
-         transform: translateY(-1px);
-       }
- 
-       .output {
-         margin-top: 20px;
-         padding: 20px;
-         background: white;
-         border-radius: 12px;
-         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-         white-space: pre-wrap; /* Сохраняем пробелы и переносы */
-         font-family: 'Consolas', monospace;
-         min-height: 100px;
-       }
- 
-       /* Добавляем лоадер для индикации процесса */
-       .loader {
-         display: none;
-         border: 4px solid #f3f3f3;
-         border-top: 4px solid #007bff;
-         border-radius: 50%;
-         width: 30px;
-         height: 30px;
-         animation: spin 1s linear infinite;
-         margin: 20px auto;
-       }
- 
-       @keyframes spin {
-         0% { transform: rotate(0deg); }
-         100% { transform: rotate(360deg); }
-       }
-     </style>
-     <!-- Добавлен шрифт для улучшения читаемости -->
-     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-   </head>
-   <body>
-     <textarea name="" id=""></textarea>
-     <div class="btn" style="background: red; cursor: pointer">start</div>
-   </body>
-   <script src="https://js.puter.com/v2/"></script>
-   <script>
-     const btn = document.querySelector(".btn");
- 
-     btn.addEventListener("click", () => {
-       let text = document.querySelector("textarea").value;
-       (async () => {
-         const resp = await puter.ai.chat(text,
-           { model: "o1", stream: true }
-         );
-         for await (const part of resp){  
-           document.write(part?.text.replaceAll("\n", "<br>").replaceAll(/[ \t]/g, "&nbsp;"));
-     <div class="container">
-       <textarea placeholder="Enter your prompt here..."></textarea>
-       <div class="btn">Generate</div>
-       <div class="loader"></div>
-       <div class="output"></div>
-     </div>
- 
-     <script src="https://js.puter.com/v2/"></script>
-     <script>
-       const btn = document.querySelector(".btn");
-       const output = document.querySelector(".output");
-       const loader = document.querySelector(".loader");
-       const textarea = document.querySelector("textarea");
- 
-       btn.addEventListener("click", async () => {
-         try {
-           const text = textarea.value.trim();
-           if (!text) return;
- 
-           // Очищаем предыдущий вывод
-           output.innerHTML = '';
-           loader.style.display = 'block';
-           btn.style.opacity = '0.7';
-           btn.style.pointerEvents = 'none';
- 
-           const resp = await puter.ai.chat(text, { model: "o1", stream: true });
-           
-           // Для потокового вывода
-           let result = '';
-           for await (const part of resp) {
-             if (part?.text) {
-               result += part.text;
-               // Используем textContent вместо innerHTML для безопасности
-               // Замены переносов и пробелов теперь обрабатываются через CSS
-               output.textContent = result;
-               
-               // Автоскролл к новому контенту
-               output.scrollTop = output.scrollHeight;
-             }
-           }
-         } catch (error) {
-           output.textContent = `Error: ${error.message}`;
-         } finally {
-           loader.style.display = 'none';
-           btn.style.opacity = '1';
-           btn.style.pointerEvents = 'all';
-         }
-       })();
-     });
-   </script>
-       });
-     </script>
-   </body>
- </html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        background: #f0f2f5;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      textarea {
+        width: 100%;
+        height: 150px;
+        padding: 15px;
+        margin: 10px 0;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        resize: vertical;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #007bff;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 24px;
+        background: #007bff;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+        margin: 10px 0;
+        border: none;
+      }
+
+      .btn:hover {
+        background: #0056b3;
+        transform: translateY(-1px);
+      }
+
+      .output {
+        margin-top: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        white-space: pre-wrap;
+        font-family: 'Consolas', monospace;
+        min-height: 100px;
+      }
+
+      .loader {
+        display: none;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <textarea placeholder="Enter your prompt here..."></textarea>
+      <button class="btn">Generate</button>
+      <div class="loader"></div>
+      <div class="output"></div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+      const btn = document.querySelector(".btn");
+      const output = document.querySelector(".output");
+      const loader = document.querySelector(".loader");
+      const textarea = document.querySelector("textarea");
+
+      btn.addEventListener("click", async () => {
+        try {
+          const text = textarea.value.trim();
+          if (!text) return;
+
+          output.innerHTML = '';
+          loader.style.display = 'block';
+          btn.style.opacity = '0.7';
+          btn.style.pointerEvents = 'none';
+
+          const resp = await puter.ai.chat(text, { model: "o1", stream: true });
+          
+          let result = '';
+          for await (const part of resp) {
+            if (part?.text) {
+              result += part.text;
+              output.textContent = result;
+              output.scrollTop = output.scrollHeight;
+            }
+          }
+        } catch (error) {
+          output.textContent = `Error: ${error.message}`;
+        } finally {
+          loader.style.display = 'none';
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'all';
+        }
+      });
+    </script>
+  </body>
+</html>
