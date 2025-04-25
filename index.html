@@ -115,40 +115,36 @@
           btn.style.opacity = '0.7';
           btn.style.pointerEvents = 'none';
 
-//           const resp = await puter.ai.chat(
-//           [
-//             {
-//               role: "system",
-//               content: "ВАЖНО: весь код, который пишешь, заключай в
-// . Я имею в виду код на языках программирования, например js, python, c# и так далее"
-//             },
-//             {
-//               role: "user",
-//               content: text // здесь подставляете строку из textarea
-//             }
-//           ],
-//           {
-//             model: "o3",
-//             stream: true
-//           }
-//         );
-          const resp = puter.ai.chat(
-            `What do you see?`, 
-            `https://assets.puter.site/doge.jpeg`)
-
-          output.textContent = resp
+          const resp = await puter.ai.chat(
+          [
+            {
+              role: "system",
+              content: "ВАЖНО: весь код, который пишешь, заключай в
+. Я имею в виду код на языках программирования, например js, python, c# и так далее"
+            },
+            {
+              role: "user",
+              content: text // здесь подставляете строку из textarea
+            }
+          ],
+          {
+            model: "o3",
+            stream: true
+          }
+        );
+          
           // Для потокового вывода
-          // let result = '';
-          // for await (const part of resp) {
-          //   if (part?.text) {
-          //     result += part.text;
-          //     // Используем textContent вместо innerHTML для безопасности
-          //     // Замены переносов и пробелов теперь обрабатываются через CSS
-          //     output.textContent = result;
+          let result = '';
+          for await (const part of resp) {
+            if (part?.text) {
+              result += part.text;
+              // Используем textContent вместо innerHTML для безопасности
+              // Замены переносов и пробелов теперь обрабатываются через CSS
+              output.textContent = result;
               
-          //     // Автоскролл к новому контенту
-          //     output.scrollTop = output.scrollHeight;
-          //   }
+              // Автоскролл к новому контенту
+              output.scrollTop = output.scrollHeight;
+            }
           }
         } catch (error) {
           output.textContent = `Error: ${error.message}`;
