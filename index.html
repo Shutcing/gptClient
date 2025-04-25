@@ -26,18 +26,21 @@
         margin: 0 auto;
       }
 
-      textarea {
+      textarea,
+      input[type="text"],
+      select {
         width: 100%;
         padding: 15px;
         margin: 10px 0;
         border: 2px solid #e0e0e0;
         border-radius: 12px;
-        resize: vertical;
         font-size: 16px;
         transition: border-color 0.3s ease;
       }
 
-      textarea:focus {
+      textarea:focus,
+      input[type="text"]:focus,
+      select:focus {
         outline: none;
         border-color: #007bff;
       }
@@ -84,83 +87,40 @@
       }
 
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      .model-selector {
-        width: 100%;
-        padding: 12px;
-        margin: 10px 0;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 16px;
-        background: white;
-      }
-
-      .file-upload {
-        margin: 10px 0;
-      }
-
-      .file-upload input[type="file"] {
-        display: none;
-      }
-
-      .file-upload label {
-        display: inline-block;
-        padding: 12px 24px;
-        background: #28a745;
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.2s ease;
-      }
-
-      .file-upload label:hover {
-        background: #218838;
-      }
-
-      #context-input {
-        height: 100px;
-        margin: 10px 0;
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <!-- Выбор модели -->
-      <select class="model-selector" id="model-selector">
-        <option value="gpt-4o-mini" selected>GPT-4o-mini (default)</option>
-        <option value="gpt-4o">GPT-4o</option>
-        <option value="o3-mini">O3-mini</option>
-        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-        <option value="deepseek-chat">DeepSeek Chat</option>
-        <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+      <!-- Model selector -->
+      <select id="model-selector">
+        <option value="gpt-4o-mini" selected>gpt-4o-mini (default)</option>
+        <option value="gpt-4o">gpt-4o</option>
+        <option value="o3-mini">o3-mini</option>
+        <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
+        <option value="deepseek-chat">deepseek-chat</option>
+        <option value="deepseek-reasoner">deepseek-reasoner</option>
       </select>
 
-      <!-- Основное поле ввода -->
-      <textarea
-        id="main-input"
-        placeholder="Enter your prompt here..."
-      ></textarea>
+      <!-- Main prompt input -->
+      <textarea id="main-input" placeholder="Enter your prompt here..."></textarea>
 
-      <!-- Загрузка изображения -->
-      <div class="file-upload">
-        <input type="file" id="image-input" accept="image/*" />
-        <label for="image-input">Attach Image</label>
-      </div>
-
-      <!-- Контекст (массив сообщений) -->
+      <!-- Context input (JSON messages array) -->
       <textarea
         id="context-input"
-        placeholder='Paste context JSON (e.g. [{"role":"user","content":"..."}])'
+        placeholder='Paste context JSON (use double quotes for keys & values)'
       ></textarea>
 
-      <!-- Кнопка -->
+      <!-- Image URL input instead of file upload -->
+      <input
+        type="text"
+        id="image-url-input"
+        placeholder="Enter image URL or comma-separated URLs"
+      />
+
+      <!-- Generate button -->
       <button class="btn" id="generate-btn">Generate</button>
       <div class="loader" id="loader"></div>
       <div class="output" id="output"></div>
@@ -173,16 +133,16 @@
       const loader = document.getElementById("loader");
       const mainInput = document.getElementById("main-input");
       const contextInput = document.getElementById("context-input");
-      const imageInput = document.getElementById("image-input");
+      const imageUrlInput = document.getElementById("image-url-input");
       const modelSelector = document.getElementById("model-selector");
 
       btn.addEventListener("click", async () => {
         const text = mainInput.value.trim();
-        const context = contextInput.value.trim();
+        const contextRaw = contextInput.value.trim();
+        const imageUrlsRaw = imageUrlInput.value.trim();
         const model = modelSelector.value;
-        const imageFile = imageInput.files[0];
 
-        if (!text && !context) {
+        if (!text && !contextRaw) {
           alert("Please enter a prompt or provide context!");
           return;
         }
@@ -191,30 +151,33 @@
         loader.style.display = "block";
         btn.disabled = true;
 
-        const options = {
-          model: model,
-          stream: true,
-        };
+        const options = { model: model, stream: true };
 
         try {
           let resp;
 
-          if (context) {
-            // Массив сообщений: нужно передавать testMode перед options
+          if (contextRaw) {
+            // Allow single quotes: convert to valid JSON
+            const jsonText = contextRaw.replace(/'/g, '"');
             let messages;
             try {
-              messages = JSON.parse(context);
-            } catch {
-              throw new Error("Invalid JSON in context-input");
+              messages = JSON.parse(jsonText);
+            } catch (e) {
+              throw new Error("Invalid JSON in context-input: use double quotes for keys and values");
             }
             resp = await puter.ai.chat(messages, false, options);
-          } else if (imageFile) {
-            // Изображение: передаём testMode перед options
-            // const imageURL = URL.createObjectURL(imageFile);
-            const imageURL = `https://assets.puter.site/doge.jpeg`
-            resp = await puter.ai.chat(text, imageURL, false, options);
+
+          } else if (imageUrlsRaw) {
+            // Support multiple URLs
+            const urls = imageUrlsRaw.split(",").map(u => u.trim()).filter(u => u);
+            if (urls.length === 1) {
+              resp = await puter.ai.chat(text, urls[0], false, options);
+            } else {
+              resp = await puter.ai.chat(text, urls, false, options);
+            }
+
           } else {
-            // Обычный текст
+            // Vanilla text prompt
             resp = await puter.ai.chat(text, options);
           }
 
@@ -226,14 +189,12 @@
               output.scrollTop = output.scrollHeight;
             }
           }
+
         } catch (err) {
           output.textContent = `Error: ${err.message}`;
         } finally {
           loader.style.display = "none";
           btn.disabled = false;
-          if (imageFile) {
-            URL.revokeObjectURL(imageFile);
-          }
         }
       });
     </script>
