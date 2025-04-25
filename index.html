@@ -28,7 +28,6 @@
 
       textarea {
         width: 100%;
-        height: 150px;
         padding: 15px;
         margin: 10px 0;
         border: 2px solid #e0e0e0;
@@ -93,7 +92,6 @@
         }
       }
 
-      /* Стили для новых элементов */
       .model-selector {
         width: 100%;
         padding: 12px;
@@ -134,9 +132,11 @@
   </head>
   <body>
     <div class="container">
-      <!-- Поле выбора модели -->
-      <select class="model-selector">
-        <option value="o3-mini">OpenAI O3-mini</option>
+      <!-- Выбор модели -->
+      <select class="model-selector" id="model-selector">
+        <option value="gpt-4o-mini" selected>GPT-4o-mini (default)</option>
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="o3-mini">O3-mini</option>
         <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
         <option value="deepseek-chat">DeepSeek Chat</option>
         <option value="deepseek-reasoner">DeepSeek Reasoner</option>
@@ -148,73 +148,72 @@
         placeholder="Enter your prompt here..."
       ></textarea>
 
-      <!-- Блок для загрузки изображения -->
+      <!-- Загрузка изображения -->
       <div class="file-upload">
         <input type="file" id="image-input" accept="image/*" />
         <label for="image-input">Attach Image</label>
       </div>
 
-      <!-- Поле для контекстных сообщений -->
+      <!-- Контекст (массив сообщений) -->
       <textarea
         id="context-input"
         placeholder='Paste context JSON (e.g. [{"role":"user","content":"..."}])'
       ></textarea>
 
-      <!-- Кнопка генерации -->
-      <button class="btn">Generate</button>
-      <div class="loader"></div>
-      <div class="output"></div>
+      <!-- Кнопка -->
+      <button class="btn" id="generate-btn">Generate</button>
+      <div class="loader" id="loader"></div>
+      <div class="output" id="output"></div>
     </div>
 
     <script src="https://js.puter.com/v2/"></script>
     <script>
-      const btn = document.querySelector(".btn");
-      const output = document.querySelector(".output");
-      const loader = document.querySelector(".loader");
+      const btn = document.getElementById("generate-btn");
+      const output = document.getElementById("output");
+      const loader = document.getElementById("loader");
       const mainInput = document.getElementById("main-input");
       const contextInput = document.getElementById("context-input");
       const imageInput = document.getElementById("image-input");
-      const modelSelector = document.querySelector(".model-selector");
+      const modelSelector = document.getElementById("model-selector");
 
       btn.addEventListener("click", async () => {
+        const text = mainInput.value.trim();
+        const context = contextInput.value.trim();
+        const model = modelSelector.value;
+        const imageFile = imageInput.files[0];
+
+        if (!text && !context) {
+          alert("Please enter a prompt or provide context!");
+          return;
+        }
+
+        output.textContent = "";
+        loader.style.display = "block";
+        btn.disabled = true;
+
+        const options = {
+          model: model,
+          stream: true,
+        };
+
         try {
-          const text = mainInput.value.trim();
-          const context = contextInput.value.trim();
-          const model = modelSelector.value;
-          const imageFile = imageInput.files[0];
-
-          if (!text && !context) {
-            alert("Please enter a prompt or provide context!");
-            return;
-          }
-
-          output.innerHTML = "";
-          loader.style.display = "block";
-          btn.style.opacity = "0.7";
-          btn.style.pointerEvents = "none";
-
           let resp;
-          const options = {
-            model: model,
-            stream: true,
-          };
 
-          // Обработка контекстных сообщений
           if (context) {
+            // Массив сообщений: нужно передавать testMode перед options
+            let messages;
             try {
-              const messages = JSON.parse(context);
-              resp = await puter.ai.chat(messages, options);
-            } catch (e) {
-              throw new Error("Invalid JSON context format");
+              messages = JSON.parse(context);
+            } catch {
+              throw new Error("Invalid JSON in context-input");
             }
-          }
-          // Обработка изображения
-          else if (imageFile) {
+            resp = await puter.ai.chat(messages, false, options);
+          } else if (imageFile) {
+            // Изображение: передаём testMode перед options
             const imageURL = URL.createObjectURL(imageFile);
-            resp = await puter.ai.chat(text, imageURL, options);
-          }
-          // Обычный текстовый запрос
-          else {
+            resp = await puter.ai.chat(text, imageURL, false, options);
+          } else {
+            // Обычный текст
             resp = await puter.ai.chat(text, options);
           }
 
@@ -226,13 +225,14 @@
               output.scrollTop = output.scrollHeight;
             }
           }
-        } catch (error) {
-          output.textContent = `Error: ${error.message}`;
+        } catch (err) {
+          output.textContent = `Error: ${err.message}`;
         } finally {
           loader.style.display = "none";
-          btn.style.opacity = "1";
-          btn.style.pointerEvents = "all";
-          URL.revokeObjectURL(imageFile); // Очистка временного URL
+          btn.disabled = false;
+          if (imageFile) {
+            URL.revokeObjectURL(imageFile);
+          }
         }
       });
     </script>
