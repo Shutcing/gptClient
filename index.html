@@ -210,7 +210,8 @@
             resp = await puter.ai.chat(messages, false, options);
           } else if (imageFile) {
             // Изображение: передаём testMode перед options
-            const imageURL = URL.createObjectURL(imageFile);
+            // const imageURL = URL.createObjectURL(imageFile);
+            const imageURL = `https://assets.puter.site/doge.jpeg`
             resp = await puter.ai.chat(text, imageURL, false, options);
           } else {
             // Обычный текст
