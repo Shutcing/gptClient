@@ -103,45 +103,43 @@
       const output = document.querySelector(".output");
       const loader = document.querySelector(".loader");
       const textarea = document.querySelector("textarea");
-
+    
       btn.addEventListener("click", async () => {
         try {
           const text = textarea.value.trim();
           if (!text) return;
-
+    
           // Очищаем предыдущий вывод
-          output.innerHTML = '';
+          output.textContent = '';
           loader.style.display = 'block';
           btn.style.opacity = '0.7';
           btn.style.pointerEvents = 'none';
-
+    
+          // Передаём массив сообщений, явно указываем testMode=false, и только потом options
           const resp = await puter.ai.chat(
-          [
+            [
+              {
+                role: "system",
+                content: "ВАЖНО: весь код, который пишешь, заключай в ``````. Я имею в виду код на языках программирования, например js, python, c# и так далее"
+              },
+              {
+                role: "user",
+                content: text
+              }
+            ],
+            /* testMode = */ false,
             {
-              role: "system",
-              content: "ВАЖНО: весь код, который пишешь, заключай в ``````. Я имею в виду код на языках программирования, например js, python, c# и так далее"
-            },
-            {
-              role: "user",
-              content: text // здесь подставляете строку из textarea
+              model: "o1-mini",   // или "o1"
+              stream: true
             }
-          ],
-          {
-            model: "o3",
-            stream: true
-          }
-        );
-          
-          // Для потокового вывода
+          );
+    
+          // Потоковый вывод
           let result = '';
           for await (const part of resp) {
             if (part?.text) {
               result += part.text;
-              // Используем textContent вместо innerHTML для безопасности
-              // Замены переносов и пробелов теперь обрабатываются через CSS
               output.textContent = result;
-              
-              // Автоскролл к новому контенту
               output.scrollTop = output.scrollHeight;
             }
           }
@@ -150,9 +148,10 @@
         } finally {
           loader.style.display = 'none';
           btn.style.opacity = '1';
-          btn.style.pointerEvents = 'all';
+          btn.style.pointerEvents = 'auto';
         }
       });
     </script>
+
   </body>
 </html>
