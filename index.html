@@ -1,93 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chat Interface</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-      * {
-        box-sizing: border-box;
-        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-      }
-
-      body {
-        margin: 0;
-        padding: 20px;
-        min-height: 100vh;
-        background: #f0f2f5;
-      }
-
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-      }
-
-      textarea {
-        width: 100%;
-        height: 150px;
-        padding: 15px;
-        margin: 10px 0;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        resize: vertical;
-        font-size: 16px;
-        transition: border-color 0.3s ease;
-      }
-
-      textarea:focus {
-        outline: none;
-        border-color: #007bff;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        padding: 12px 24px;
-        background: #007bff;
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        user-select: none;
-        margin: 10px 0;
-        border: none;
-      }
-
-      .btn:hover {
-        background: #0056b3;
-        transform: translateY(-1px);
-      }
-
-      .output {
-        margin-top: 20px;
-        padding: 20px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        white-space: pre-wrap;
-        font-family: 'Consolas', monospace;
-        min-height: 100px;
-      }
-
-      .loader {
-        display: none;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #007bff;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-      }
-
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
-  </head>
-  <body>
+<body>
     <div class="container">
       <textarea placeholder="Enter your prompt here..."></textarea>
       <button class="btn">Generate</button>
@@ -112,7 +23,11 @@
           btn.style.opacity = '0.7';
           btn.style.pointerEvents = 'none';
 
-          const resp = await puter.ai.chat(text, { model: "o1", stream: true });
+          // Исправлено указание модели согласно документации
+          const resp = await puter.ai.chat(text, { 
+            model: "o1-mini", // Правильное имя модели из списка доступных
+            stream: true 
+          });
           
           let result = '';
           for await (const part of resp) {
@@ -132,4 +47,3 @@
       });
     </script>
   </body>
-</html>
