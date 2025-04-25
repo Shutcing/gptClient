@@ -115,7 +115,13 @@
           btn.style.opacity = '0.7';
           btn.style.pointerEvents = 'none';
 
-          const resp = await puter.ai.chat(text, { model: "o1", stream: true });
+          const resp = await puter.ai.chat(text, { model: "o1", stream: true, messages: 
+            [
+                {
+                    role: 'user',
+                    content: 'ВАЖНО: весь код, который пишешь заключай в ``` ````'
+                },
+            ] });
           
           // Для потокового вывода
           let result = '';
